@@ -1,16 +1,22 @@
-exports.config = {
+const path = require('path')
+
+export const config = {
     //
     // ====================
     // Runner Configuration
     // ====================
     // WebdriverIO supports running e2e tests as well as unit and component tests.
     runner: 'local',
+    path : '/wd/hub',
+    port : 4723,
+
+    
     //
     // ==================
     // Specify Test Files
     // ==================
     // Define which test specs should run. The pattern is relative to the directory
-    // of the configuration file being run.
+    // from which `wdio` was called.
     //
     // The specs are defined as an array of spec files (optionally using wildcards
     // that will be expanded). The test for each spec file will be run in a separate
@@ -22,7 +28,7 @@ exports.config = {
     // will be called from there.
     //
     specs: [
-        './features/**/*.feature'
+        './test/specs/appium.js'
     ],
     // Patterns to exclude.
     exclude: [
@@ -51,9 +57,19 @@ exports.config = {
     // https://saucelabs.com/platform/platform-configurator
     //
     capabilities: [{
-        browserName: 'chrome'
+        platformName                : "Android",
+        "appium:automationName"     : 'UiAutomator2',
+        "appium:deviceName"         : 'Pixel',
+        "appium:platformVersion"    : '9.0',
+        "appium:app"                : path.join(process.cwd(),'./test/apk/Diet_meal.apk'),
+        "appium:appPackage"         : "com.fghilmany.dietmealapp",
+        "appium:appActivity"        : "com.fghilmany.dietmealapp.ui.main.MainActivity",
+        "appium:noReset"            : true,
+        "appium:forceAppLaunch"     : true,
     }],
-
+    // "appium:app"                : path.join(process.cwd(),'./test/apk/ApiDemos-debug.apk'),
+    // "appium:appPackage"         : "com.fghilmany.dietmealapp",
+    // "appium:appActivity"        : "com.fghilmany.dietmealapp.ui.main.MainActivity",
     //
     // ===================
     // Test Configurations
@@ -85,7 +101,7 @@ exports.config = {
     // with `/`, the base url gets prepended, not including the path portion of your baseUrl.
     // If your `url` parameter starts without a scheme or `/` (like `some/path`), the base url
     // gets prepended directly.
-    baseUrl: 'http://localhost',
+    baseUrl: 'http://127.0.0.1',
     //
     // Default timeout for all waitFor* commands.
     waitforTimeout: 10000,
@@ -101,15 +117,27 @@ exports.config = {
     // Services take over a specific job you don't want to take care of. They enhance
     // your test setup with almost no effort. Unlike plugins, they don't add new
     // commands. Instead, they hook themselves up into the test process.
-    // services: [],
-    //
+    services: [
+        [   
+            'appium',
+            {
+                args : {
+                    address : 'localhost',
+                    port    : 4723,
+                },
+                logPath : './log',
+                command : 'appium'
+            }
+        ]
+    ],
+    
     // Framework you want to run your specs with.
     // The following are supported: Mocha, Jasmine, and Cucumber
     // see also: https://webdriver.io/docs/frameworks
     //
     // Make sure you have the wdio adapter package for the specific framework installed
     // before running any tests.
-    framework: 'cucumber',
+    framework: 'mocha',
     //
     // The number of times to retry the entire specfile when it fails as a whole
     // specFileRetries: 1,
@@ -117,7 +145,7 @@ exports.config = {
     // Delay in seconds between the spec file retry attempts
     // specFileRetriesDelay: 0,
     //
-    // Whether or not retried spec files should be retried immediately or deferred to the end of the queue
+    // Whether or not retried specfiles should be retried immediately or deferred to the end of the queue
     // specFileRetriesDeferred: false,
     //
     // Test reporter for stdout.
@@ -125,31 +153,14 @@ exports.config = {
     // see also: https://webdriver.io/docs/dot-reporter
     reporters: ['spec'],
 
+
+    
     //
-    // If you are using Cucumber you need to specify the location of your step definitions.
-    cucumberOpts: {
-        // <string[]> (file/dir) require files before executing features
-        require: ['./features/step-definitions/steps.js'],
-        // <boolean> show full backtrace for errors
-        backtrace: false,
-        // <string[]> ("extension:module") require files with the given EXTENSION after requiring MODULE (repeatable)
-        requireModule: [],
-        // <boolean> invoke formatters without executing steps
-        dryRun: false,
-        // <boolean> abort the run on first failure
-        failFast: false,
-        // <boolean> hide step definition snippets for pending steps
-        snippets: true,
-        // <boolean> hide source uris
-        source: true,
-        // <boolean> fail if there are any undefined or pending steps
-        strict: false,
-        // <string> (expression) only execute the features or scenarios with tags matching the expression
-        tagExpression: '',
-        // <number> timeout for step definitions
-        timeout: 60000,
-        // <boolean> Enable this config to treat undefined definitions as warnings.
-        ignoreUndefinedDefinitions: false
+    // Options to be passed to Mocha.
+    // See the full list at http://mochajs.org/
+    mochaOpts: {
+        ui: 'bdd',
+        timeout: 60000
     },
     
     //
@@ -162,7 +173,7 @@ exports.config = {
     // resolved to continue.
     /**
      * Gets executed once before all workers get launched.
-     * @param {object} config wdio configuration object
+     * @param {Object} config wdio configuration object
      * @param {Array.<Object>} capabilities list of capabilities details
      */
     // onPrepare: function (config, capabilities) {
@@ -170,30 +181,30 @@ exports.config = {
     /**
      * Gets executed before a worker process is spawned and can be used to initialise specific service
      * for that worker as well as modify runtime environments in an async fashion.
-     * @param  {string} cid      capability id (e.g 0-0)
-     * @param  {object} caps     object containing capabilities for session that will be spawn in the worker
-     * @param  {object} specs    specs to be run in the worker process
-     * @param  {object} args     object that will be merged with the main configuration once worker is initialized
-     * @param  {object} execArgv list of string arguments passed to the worker process
+     * @param  {String} cid      capability id (e.g 0-0)
+     * @param  {[type]} caps     object containing capabilities for session that will be spawn in the worker
+     * @param  {[type]} specs    specs to be run in the worker process
+     * @param  {[type]} args     object that will be merged with the main configuration once worker is initialized
+     * @param  {[type]} execArgv list of string arguments passed to the worker process
      */
     // onWorkerStart: function (cid, caps, specs, args, execArgv) {
     // },
     /**
      * Gets executed just after a worker process has exited.
-     * @param  {string} cid      capability id (e.g 0-0)
-     * @param  {number} exitCode 0 - success, 1 - fail
-     * @param  {object} specs    specs to be run in the worker process
-     * @param  {number} retries  number of retries used
+     * @param  {String} cid      capability id (e.g 0-0)
+     * @param  {Number} exitCode 0 - success, 1 - fail
+     * @param  {[type]} specs    specs to be run in the worker process
+     * @param  {Number} retries  number of retries used
      */
     // onWorkerEnd: function (cid, exitCode, specs, retries) {
     // },
     /**
      * Gets executed just before initialising the webdriver session and test framework. It allows you
      * to manipulate configurations depending on the capability or spec.
-     * @param {object} config wdio configuration object
+     * @param {Object} config wdio configuration object
      * @param {Array.<Object>} capabilities list of capabilities details
      * @param {Array.<String>} specs List of spec file paths that are to be run
-     * @param {string} cid worker id (e.g. 0-0)
+     * @param {String} cid worker id (e.g. 0-0)
      */
     // beforeSession: function (config, capabilities, specs, cid) {
     // },
@@ -202,90 +213,74 @@ exports.config = {
      * variables like `browser`. It is the perfect place to define custom commands.
      * @param {Array.<Object>} capabilities list of capabilities details
      * @param {Array.<String>} specs        List of spec file paths that are to be run
-     * @param {object}         browser      instance of created browser/device session
+     * @param {Object}         browser      instance of created browser/device session
      */
     // before: function (capabilities, specs) {
     // },
     /**
      * Runs before a WebdriverIO command gets executed.
-     * @param {string} commandName hook command name
+     * @param {String} commandName hook command name
      * @param {Array} args arguments that command would receive
      */
     // beforeCommand: function (commandName, args) {
     // },
     /**
-     * Cucumber Hooks
-     *
-     * Runs before a Cucumber Feature.
-     * @param {string}                   uri      path to feature file
-     * @param {GherkinDocument.IFeature} feature  Cucumber feature object
+     * Hook that gets executed before the suite starts
+     * @param {Object} suite suite details
      */
-    // beforeFeature: function (uri, feature) {
+    // beforeSuite: function (suite) {
     // },
     /**
-     *
-     * Runs before a Cucumber Scenario.
-     * @param {ITestCaseHookParameter} world    world object containing information on pickle and test step
-     * @param {object}                 context  Cucumber World object
+     * Function to be executed before a test (in Mocha/Jasmine) starts.
      */
-    // beforeScenario: function (world, context) {
+    // beforeTest: function (test, context) {
     // },
     /**
-     *
-     * Runs before a Cucumber Step.
-     * @param {Pickle.IPickleStep} step     step data
-     * @param {IPickle}            scenario scenario pickle
-     * @param {object}             context  Cucumber World object
+     * Hook that gets executed _before_ a hook within the suite starts (e.g. runs before calling
+     * beforeEach in Mocha)
      */
-    // beforeStep: function (step, scenario, context) {
+    // beforeHook: function (test, context) {
     // },
     /**
-     *
-     * Runs after a Cucumber Step.
-     * @param {Pickle.IPickleStep} step             step data
-     * @param {IPickle}            scenario         scenario pickle
-     * @param {object}             result           results object containing scenario results
-     * @param {boolean}            result.passed    true if scenario has passed
-     * @param {string}             result.error     error stack if scenario failed
-     * @param {number}             result.duration  duration of scenario in milliseconds
-     * @param {object}             context          Cucumber World object
+     * Hook that gets executed _after_ a hook within the suite starts (e.g. runs after calling
+     * afterEach in Mocha)
      */
-    // afterStep: function (step, scenario, result, context) {
+    // afterHook: function (test, context, { error, result, duration, passed, retries }) {
     // },
     /**
-     *
-     * Runs after a Cucumber Scenario.
-     * @param {ITestCaseHookParameter} world            world object containing information on pickle and test step
-     * @param {object}                 result           results object containing scenario results
-     * @param {boolean}                result.passed    true if scenario has passed
-     * @param {string}                 result.error     error stack if scenario failed
-     * @param {number}                 result.duration  duration of scenario in milliseconds
-     * @param {object}                 context          Cucumber World object
+     * Function to be executed after a test (in Mocha/Jasmine only)
+     * @param {Object}  test             test object
+     * @param {Object}  context          scope object the test was executed with
+     * @param {Error}   result.error     error object in case the test fails, otherwise `undefined`
+     * @param {Any}     result.result    return object of test function
+     * @param {Number}  result.duration  duration of test
+     * @param {Boolean} result.passed    true if test has passed, otherwise false
+     * @param {Object}  result.retries   informations to spec related retries, e.g. `{ attempts: 0, limit: 0 }`
      */
-    // afterScenario: function (world, result, context) {
+    // afterTest: function(test, context, { error, result, duration, passed, retries }) {
     // },
+
+
     /**
-     *
-     * Runs after a Cucumber Feature.
-     * @param {string}                   uri      path to feature file
-     * @param {GherkinDocument.IFeature} feature  Cucumber feature object
+     * Hook that gets executed after the suite has ended
+     * @param {Object} suite suite details
      */
-    // afterFeature: function (uri, feature) {
+    // afterSuite: function (suite) {
     // },
     
     /**
      * Runs after a WebdriverIO command gets executed
-     * @param {string} commandName hook command name
+     * @param {String} commandName hook command name
      * @param {Array} args arguments that command would receive
-     * @param {number} result 0 - command success, 1 - command error
-     * @param {object} error error object if any
+     * @param {Number} result 0 - command success, 1 - command error
+     * @param {Object} error error object if any
      */
     // afterCommand: function (commandName, args, result, error) {
     // },
     /**
      * Gets executed after all tests are done. You still have access to all global variables from
      * the test.
-     * @param {number} result 0 - test pass, 1 - test fail
+     * @param {Number} result 0 - test pass, 1 - test fail
      * @param {Array.<Object>} capabilities list of capabilities details
      * @param {Array.<String>} specs List of spec file paths that ran
      */
@@ -293,7 +288,7 @@ exports.config = {
     // },
     /**
      * Gets executed right after terminating the webdriver session.
-     * @param {object} config wdio configuration object
+     * @param {Object} config wdio configuration object
      * @param {Array.<Object>} capabilities list of capabilities details
      * @param {Array.<String>} specs List of spec file paths that ran
      */
@@ -302,8 +297,8 @@ exports.config = {
     /**
      * Gets executed after all workers got shut down and the process is about to exit. An error
      * thrown in the onComplete hook will result in the test run failing.
-     * @param {object} exitCode 0 - success, 1 - fail
-     * @param {object} config wdio configuration object
+     * @param {Object} exitCode 0 - success, 1 - fail
+     * @param {Object} config wdio configuration object
      * @param {Array.<Object>} capabilities list of capabilities details
      * @param {<Object>} results object containing test results
      */
@@ -311,8 +306,8 @@ exports.config = {
     // },
     /**
     * Gets executed when a refresh happens.
-    * @param {string} oldSessionId session ID of the old session
-    * @param {string} newSessionId session ID of the new session
+    * @param {String} oldSessionId session ID of the old session
+    * @param {String} newSessionId session ID of the new session
     */
     // onReload: function(oldSessionId, newSessionId) {
     // }
